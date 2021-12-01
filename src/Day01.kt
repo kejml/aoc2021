@@ -11,7 +11,7 @@ fun main() {
     }
 
     fun part2(input: List<Int>): Int {
-        return input.size
+        return part1(input.windowed(size = 3).map { it.sum() })
     }
 
     // test if implementation meets criteria from the description, like:
