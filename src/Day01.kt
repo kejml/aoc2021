@@ -20,5 +20,8 @@ fun main() {
 
     val input = readInput("Day01").map { it.toInt() }
     println(part1(input))
+
+    check(part2(testInput) == 5)
+
     println(part2(input))
 }
