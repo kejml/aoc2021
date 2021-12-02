@@ -1,6 +1,15 @@
 fun main() {
     fun part1(input: List<Pair<String, Int>>): Int {
-        return input.size
+        var pos = 0
+        var depth = 0
+        input.forEach {
+            when (it.first) {
+                "forward" -> pos += it.second
+                "down" -> depth += it.second
+                "up" -> depth -= it.second
+            }
+        }
+        return depth * pos
     }
 
     fun part2(input: List<Pair<String, Int>>): Int {
