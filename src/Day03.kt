@@ -1,6 +1,19 @@
 fun main() {
     fun part1(input: List<String>): Int {
-        return input.size
+        val result = MutableList(input.first().length) { 0 }
+        input.forEach {
+            it.toList().forEachIndexed { index, c -> result[index] += c.digitToInt() }
+        }
+
+        val gammaString = result
+            .map { k ->
+                if (k / input.size.toDouble() > 0.5) '1' else '0'
+            }
+            .joinToString("")
+        val gamma = gammaString.toInt(2)
+        val epsilon = gammaString.map { if (it == '1') '0' else '1' }.joinToString("").toInt(2)
+
+        return gamma * epsilon
     }
 
     fun part2(input: List<String>): Int {
