@@ -16,31 +16,30 @@ fun main() {
         return gamma * epsilon
     }
 
-    fun checkAtBit(input: List<String>, bit: Int, bitCriteria: BitCriteria): ArrayList<String> {
-        val ones = ArrayList<String>()
-        val zeros = ArrayList<String>()
+    fun getValue(input: List<String>, criteria: BitCriteria): Int {
+        tailrec fun singleValue(input: List<String>, bit: Int, bitCriteria: BitCriteria): ArrayList<String> {
+            val ones = ArrayList<String>()
+            val zeros = ArrayList<String>()
 
-        input.forEach {
-            if (it[bit] == '1') {
-                ones.add(it)
+            input.forEach {
+                if (it[bit] == '1') {
+                    ones.add(it)
+                } else {
+                    zeros.add(it)
+                }
+            }
+            val subResult = when (bitCriteria) {
+                BitCriteria.OXYGEN -> if (ones.size >= zeros.size) ones else zeros
+                BitCriteria.CO2 -> if (ones.size < zeros.size) ones else zeros
+            }
+            return if (subResult.size <= 1) {
+                subResult
             } else {
-                zeros.add(it)
+                singleValue(subResult, bit + 1, bitCriteria)
             }
         }
-        return when (bitCriteria) {
-            BitCriteria.OXYGEN -> if (ones.size >= zeros.size) ones else zeros
-            BitCriteria.CO2 -> if (ones.size < zeros.size) ones else zeros
-        }
-    }
 
-    fun getValue(input: List<String>, criteria: BitCriteria): Int {
-        var bit = 0
-        var checkAtBit = checkAtBit(input, bit, criteria)
-        while (checkAtBit.size > 1) {
-            bit++
-            checkAtBit = checkAtBit(checkAtBit, bit, criteria)
-        }
-        return checkAtBit.first().toInt(2)
+        return singleValue(input, 0, criteria).first().toInt(2)
     }
 
     fun part2(input: List<String>): Int {
