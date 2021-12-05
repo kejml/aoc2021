@@ -5,9 +5,7 @@ fun main() {
         x: Int,
         y: Int
     ) {
-        val coordinates = Pair(x, y)
-        computeIfPresent(coordinates) { _, v -> v + 1 }
-        putIfAbsent(coordinates, 1)
+        compute(Pair(x, y)) { _, v -> (v ?: 0) + 1 }
     }
 
     fun HashMap<Pair<Int, Int>, Int>.draw(): String {
@@ -26,10 +24,10 @@ fun main() {
         val map = HashMap<Pair<Int, Int>, Int>()
         input
             .map { it.split(" -> ") }
-            .map {
+            .map { line ->
                 Pair(
-                    it[0].split(",").map { it.toInt() },
-                    it[1].split(",").map { it.toInt() }
+                    line[0].split(",").map { it.toInt() },
+                    line[1].split(",").map { it.toInt() }
                 )
             }
             .forEach {
