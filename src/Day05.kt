@@ -61,7 +61,64 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val map = HashMap<Pair<Int, Int>, Int>()
+        input
+            .map { it.split(" -> ") }
+            .map {
+                Pair(
+                    it[0].split(",").map { it.toInt() },
+                    it[1].split(",").map { it.toInt() }
+                )
+            }
+            .forEach {
+                if (it.first[0] == it.second[0]) {
+                    if (it.first[1]<= it.second[1]) {
+                        for (i in it.first[1]..it.second[1]) {
+                            map.increment(it.first[0], i)
+                        }
+                    } else {
+                        for (i in it.second[1]..it.first[1]) {
+                            map.increment(it.first[0], i)
+                        }
+                    }
+                } else if (it.first[1] == it.second[1]) {
+                    if (it.first[0] <= it.second[0]) {
+                        for (i in it.first[0]..it.second[0]) {
+                            map.increment(i, it.first[1])
+                        }
+                    } else {
+                        for (i in it.second[0]..it.first[0]) {
+                            map.increment(i, it.first[1])
+                        }
+                    }
+                } else {
+                    if (it.first[0] < it.second[0]) {
+                        if (it.first[1] < it.second[1]) {
+                            for (i in it.first[0]..it.second[0]) {
+                                map.increment(i, it.first[1] + i - it.first[0])
+                            }
+                        } else {
+                            for (i in it.first[0]..it.second[0]) {
+                                map.increment(i, it.first[1] - i + it.first[0])
+                            }
+                        }
+                    } else {
+                        // 8,0   0,8
+                        if (it.second[1] < it.first[1]) {
+                            for (i in it.second[0]..it.first[0]) {
+                                map.increment(i, it.second[1] + i - it.second[0])
+                            }
+                        } else {
+                            for (i in it.second[0]..it.first[0]) {
+                                map.increment(i, it.second[1] - i + it.second[0])
+                            }
+                        }
+                    }
+                }
+//                println(map.draw())
+            }
+//        println(map.draw())
+        return map.count { it.value >= 2 }
     }
 
     // test if implementation meets criteria from the description, like:
@@ -71,6 +128,6 @@ fun main() {
     val input = readInput("Day05")
     println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 12)
     println(part2(input))
 }
