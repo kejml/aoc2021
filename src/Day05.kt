@@ -22,45 +22,7 @@ fun main() {
     }
 
 
-    fun part1(input: List<String>): Int {
-        val map = HashMap<Pair<Int, Int>, Int>()
-        input
-            .map { it.split(" -> ") }
-            .map {
-                Pair(
-                    it[0].split(",").map { it.toInt() },
-                    it[1].split(",").map { it.toInt() }
-                )
-            }
-            .forEach {
-                if (it.first[0] == it.second[0]) {
-                    if (it.first[1]<= it.second[1]) {
-                        for (i in it.first[1]..it.second[1]) {
-                            map.increment(it.first[0], i)
-                        }
-                    } else {
-                        for (i in it.second[1]..it.first[1]) {
-                            map.increment(it.first[0], i)
-                        }
-                    }
-                } else if (it.first[1] == it.second[1]) {
-                    if (it.first[0] <= it.second[0]) {
-                        for (i in it.first[0]..it.second[0]) {
-                            map.increment(i, it.first[1])
-                        }
-                    } else {
-                        for (i in it.second[0]..it.first[0]) {
-                            map.increment(i, it.first[1])
-                        }
-                    }
-                }
-//                println(map.draw())
-            }
-//        println(map.draw())
-        return map.count { it.value >= 2 }
-    }
-
-    fun part2(input: List<String>): Int {
+    fun part1(input: List<String>, diagonal: (Pair<List<Int>, List<Int>>, HashMap<Pair<Int, Int>, Int>) -> Unit = {_, _ -> }): Int {
         val map = HashMap<Pair<Int, Int>, Int>()
         input
             .map { it.split(" -> ") }
@@ -92,33 +54,38 @@ fun main() {
                         }
                     }
                 } else {
-                    if (it.first[0] < it.second[0]) {
-                        if (it.first[1] < it.second[1]) {
-                            for (i in it.first[0]..it.second[0]) {
-                                map.increment(i, it.first[1] + i - it.first[0])
-                            }
-                        } else {
-                            for (i in it.first[0]..it.second[0]) {
-                                map.increment(i, it.first[1] - i + it.first[0])
-                            }
-                        }
-                    } else {
-                        // 8,0   0,8
-                        if (it.second[1] < it.first[1]) {
-                            for (i in it.second[0]..it.first[0]) {
-                                map.increment(i, it.second[1] + i - it.second[0])
-                            }
-                        } else {
-                            for (i in it.second[0]..it.first[0]) {
-                                map.increment(i, it.second[1] - i + it.second[0])
-                            }
-                        }
-                    }
+                    diagonal(it, map)
                 }
 //                println(map.draw())
             }
 //        println(map.draw())
         return map.count { it.value >= 2 }
+    }
+
+    fun part2(input: List<String>): Int {
+        return part1(input) { coordinates, map ->
+            if (coordinates.first[0] < coordinates.second[0]) {
+                if (coordinates.first[1] < coordinates.second[1]) {
+                    for (i in coordinates.first[0]..coordinates.second[0]) {
+                        map.increment(i, coordinates.first[1] + i - coordinates.first[0])
+                    }
+                } else {
+                    for (i in coordinates.first[0]..coordinates.second[0]) {
+                        map.increment(i, coordinates.first[1] - i + coordinates.first[0])
+                    }
+                }
+            } else {
+                if (coordinates.second[1] < coordinates.first[1]) {
+                    for (i in coordinates.second[0]..coordinates.first[0]) {
+                        map.increment(i, coordinates.second[1] + i - coordinates.second[0])
+                    }
+                } else {
+                    for (i in coordinates.second[0]..coordinates.first[0]) {
+                        map.increment(i, coordinates.second[1] - i + coordinates.second[0])
+                    }
+                }
+            }
+        }
     }
 
     // test if implementation meets criteria from the description, like:
