@@ -24,6 +24,6 @@ fun main() {
     val input = readLineInt("Day07")
     println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 168)
     println(part2(input))
 }
