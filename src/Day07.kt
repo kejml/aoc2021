@@ -7,14 +7,22 @@ fun main() {
 
         var result = Int.MAX_VALUE
 
-        for (i in min .. max) {
+        for (i in min..max) {
             result = result.coerceAtMost(input.sumOf { abs(it - i) })
         }
         return result
     }
 
     fun part2(input: List<Int>): Int {
-        return input.size
+        val min = input.minOf { it }
+        val max = input.maxOf { it }
+
+        var result = Int.MAX_VALUE
+
+        for (i in min..max) {
+            result = result.coerceAtMost(input.sumOf { (1..abs(it - i)).sum() })
+        }
+        return result
     }
 
     // test if implementation meets criteria from the description, like:
