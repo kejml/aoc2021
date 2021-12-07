@@ -1,6 +1,16 @@
+import kotlin.math.abs
+
 fun main() {
     fun part1(input: List<Int>): Int {
-        return input.size
+        val min = input.minOf { it }
+        val max = input.maxOf { it }
+
+        var result = Int.MAX_VALUE
+
+        for (i in min .. max) {
+            result = result.coerceAtMost(input.sumOf { abs(it - i) })
+        }
+        return result
     }
 
     fun part2(input: List<Int>): Int {
