@@ -1,9 +1,7 @@
 fun main() {
     fun part1(input: List<String>): Int {
-        return input
-            .map { fullLine -> fullLine.split("|")[1].trim() }
-            .sumOf { rhs ->
-                rhs.split(" ").filter { it.length == 2 || it.length == 3 || it.length == 4 || it.length == 7 }.size
+        return input.map { fullLine -> fullLine.split("|")[1].trim() }.sumOf { rhs ->
+                rhs.split(" ").filter { it.length in listOf(2, 3, 4, 7) }.size
             }
 
     }
@@ -11,9 +9,11 @@ fun main() {
     fun part2(input: List<String>): Int {
         return input.map { line ->
             val (lhs, rhs) = line.split("|").map { it.trim() }
-            val mapping = computeMapping(lhs.split(" ").map { it.sort() })
-            rhs.split(" ").map { it.sort() }.map { mapping.indexOf(it) }.joinToString("").toInt()
-        }.sum()
+            lhs.split(" ").map { it.sort() } to rhs.split(" ").map { it.sort() }
+        }.sumOf { (lhs, rhs) ->
+            val mapping = computeMapping(lhs)
+            rhs.map { mapping.indexOf(it) }.joinToString("").toInt()
+        }
     }
 
     // test if implementation meets criteria from the description, like:
