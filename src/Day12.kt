@@ -10,7 +10,13 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val connections = input.map { it.split("-").toSet() }
+
+        val start = PathNode("start")
+        start.nextCaves = connections.filter { it.contains("start") }.map { PathNode(it.other("start"), start) }
+        start.nextCaves.forEach { it.nextNodes2(connections) }
+
+        return start.getEnds()
     }
 
     // test if implementation meets criteria from the description, like:
@@ -25,7 +31,9 @@ fun main() {
     val input = readInput("Day12")
     println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 36)
+    check(part2(testInput2) == 103)
+    check(part2(testInput3) == 3509)
     println(part2(input))
 }
 
@@ -52,6 +60,18 @@ class PathNode(private val cave:String, private val parent: PathNode? = null, va
         }
         return false
     }
+    private fun pathContains2(cave: String): Boolean {
+        if (cave == "start") return true
+        var found = 0
+        var node: PathNode? = this
+        while (node != null) {
+            if (found == 1 && pathHasLowerCaseDuplicate())
+                return true
+            if (node.cave == cave && ++found == 2) return true
+            node = node.parent
+        }
+        return false
+    }
 
     fun nextNodes(connections: List<Set<String>>) {
         val nextCaves = connections
@@ -62,6 +82,31 @@ class PathNode(private val cave:String, private val parent: PathNode? = null, va
         this.nextCaves = nextCaves
         this.nextCaves.filter { it.cave != "end" }.forEach { it.nextNodes(connections) }
     }
+
+    fun nextNodes2(connections: List<Set<String>>) {
+        val nextCaves = connections
+            .filter { connection -> connection.contains(this.cave) }
+            .map { connection -> connection.other(this.cave) }
+            .filter { potentialCave -> if (potentialCave.isLowerCase()) !this.pathContains2(potentialCave) else true }
+            .map { PathNode(it, this) }
+        this.nextCaves = nextCaves
+        this.nextCaves.filter { it.cave != "end" }.forEach { it.nextNodes2(connections) }
+    }
+
+    private fun pathFromRoot(): MutableList<String> {
+        val path = mutableListOf<String>()
+        var node: PathNode? = this
+        while (node != null) {
+            path.add(node.cave)
+            node = node.parent
+        }
+        return path
+    }
+
+    private fun pathHasLowerCaseDuplicate(): Boolean =
+        pathFromRoot().filter { it.isLowerCase() }.groupBy { it }.filterValues { it.size > 1 }.isNotEmpty()
+
+    fun pathFromRootAsString(): String = pathFromRoot().reversed().joinToString(",")
 
     override fun toString() = "PathNode(cave='$cave')"
 }
