@@ -1,4 +1,11 @@
 fun main() {
+    fun Pair<Int, Int>.neighbours(): List<Pair<Int, Int>> = listOf(
+        this.copy(first = this.first + 1),
+        this.copy(first = this.first - 1),
+        this.copy(second = this.second + 1),
+        this.copy(second = this.second - 1),
+    )
+
     fun createMap(input: List<String>): Map<Pair<Int, Int>, Int> {
         return input.mapIndexed { rowIndex, row -> row.mapIndexed { columnIndex, c -> Pair(rowIndex, columnIndex) to c.digitToInt() }.toMap() }
             .flatMap { it.asSequence() }
@@ -62,10 +69,3 @@ fun MutableMap<Pair<Int, Int>, Int>.addNeighbours(map: Map<Pair<Int, Int>, Int>,
         }
     }
 }
-
-fun Pair<Int, Int>.neighbours(): List<Pair<Int, Int>> = listOf(
-    this.copy(first = this.first + 1),
-    this.copy(first = this.first - 1),
-    this.copy(second = this.second + 1),
-    this.copy(second = this.second - 1),
-)
