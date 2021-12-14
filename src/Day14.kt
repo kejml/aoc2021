@@ -17,8 +17,34 @@ fun main() {
         return eachCount.maxOf { it.value } - eachCount.minOf { it.value }
     }
 
-    fun part2(input: List<String>): Int {
-        return input.size
+    fun part2(input: List<String>): Long {
+        val (s, rules) = process(input)
+
+        var twins: MutableMap<String, Long> = HashMap()
+        s.windowed(2).forEach { twins[it] = (twins[it] ?: 0) + 1  }
+
+        repeat(40) {
+            val newTwins: MutableMap<String, Long> = HashMap()
+
+            twins = twins.map {
+                if (rules[it.key] != null) {
+                    newTwins[it.key[0] + rules[it.key]!!] = (newTwins[it.key[0] + rules[it.key]!!] ?: 0) + it.value
+                    newTwins[rules[it.key]!! + it.key[1]] = (newTwins[rules[it.key]!! + it.key[1]] ?: 0) + it.value
+                    it.key to 0L
+                } else
+                    it.key to it.value
+            }.toMap().toMutableMap()
+
+            newTwins.forEach{
+                twins.merge(it.key, it.value) {i1, i2 -> i1 + i2}
+            }
+        }
+
+        val counts = HashMap<Char, Long>()
+        twins.forEach { (twin, count) -> counts[twin[0]] = (counts[twin[0]] ?: 0) + count }
+        counts[s.last()] = (counts[s.last()] ?: 0) + 1
+
+        return counts.maxOf { it.value } - counts.minOf { it.value }
     }
 
     // test if implementation meets criteria from the description, like:
@@ -28,6 +54,6 @@ fun main() {
     val input = readInput("Day14")
     println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 2188189693529)
     println(part2(input))
 }
