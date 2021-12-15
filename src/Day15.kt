@@ -10,21 +10,24 @@ fun main() {
 
     fun dijkstra(unprocessed: MutableMap<Pair<Int, Int>, Node>): MutableMap<Pair<Int, Int>, Node> {
         val processed: MutableMap<Pair<Int, Int>, Node> = HashMap()
+        val candidates: MutableMap<Pair<Int, Int>, Node> = HashMap()
 
         while (unprocessed.isNotEmpty()) {
-            val nextNode = unprocessed.minByOrNull { it.value.shortestPath }!!
+            val nextNode = candidates.minByOrNull { it.value.shortestPath } ?: unprocessed.minByOrNull { it.value.shortestPath }!!
             nextNode.key.neighbours().forEach {
                 val n = unprocessed[it]
                 if (n != null) {
                     if (n.shortestPath > nextNode.value.shortestPath + n.price) {
                         n.shortestPath = nextNode.value.shortestPath + n.price
                         n.prevNode = it
+                        candidates[it] = n
                     }
                 }
             }
 
             processed[nextNode.key] = nextNode.value
             unprocessed.remove(nextNode.key)
+            candidates.remove(nextNode.key)
         }
         return processed
     }
