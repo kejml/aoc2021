@@ -8,14 +8,14 @@ fun main() {
         )
     }
 
-    fun dijkstra(unprocessed: MutableMap<Pair<Int, Int>, Node>): MutableMap<Pair<Int, Int>, Node> {
+    fun dijkstra(map: Map<Pair<Int, Int>, Node>): Map<Pair<Int, Int>, Node> {
         val processed: MutableMap<Pair<Int, Int>, Node> = HashMap()
-        val candidates: MutableMap<Pair<Int, Int>, Node> = HashMap()
+        val candidates = map.filter { it.value.shortestPath == 0 }.toMutableMap()
 
-        while (unprocessed.isNotEmpty()) {
-            val nextNode = candidates.minByOrNull { it.value.shortestPath } ?: unprocessed.minByOrNull { it.value.shortestPath }!!
-            nextNode.key.neighbours().forEach {
-                val n = unprocessed[it]
+        while (candidates.isNotEmpty()) {
+            val nextNode = candidates.minByOrNull { it.value.shortestPath }!!
+            nextNode.key.neighbours().filter { !processed.containsKey(it) }.forEach {
+                val n = map[it]
                 if (n != null) {
                     if (n.shortestPath > nextNode.value.shortestPath + n.price) {
                         n.shortestPath = nextNode.value.shortestPath + n.price
@@ -24,19 +24,17 @@ fun main() {
                     }
                 }
             }
-
             processed[nextNode.key] = nextNode.value
-            unprocessed.remove(nextNode.key)
             candidates.remove(nextNode.key)
         }
         return processed
     }
 
     fun part1(input: List<String>): Int {
-        val unprocessed = input.mapIndexed { row, s -> s.toList().mapIndexed { column, c -> (row to column) to Node(c.digitToInt()) } }.flatten().toMap().toMutableMap()
-        unprocessed[Pair(0,0)]!!.shortestPath = 0
+        val map = input.mapIndexed { row, s -> s.toList().mapIndexed { column, c -> (row to column) to Node(c.digitToInt()) } }.flatten().toMap()
+        map[Pair(0,0)]!!.shortestPath = 0
 
-        val processed: MutableMap<Pair<Int, Int>, Node> = dijkstra(unprocessed)
+        val processed = dijkstra(map)
 
         return processed[Pair(input.size - 1, input.size - 1)]!!.shortestPath
 
@@ -46,20 +44,20 @@ fun main() {
 
 
     fun part2(input: List<String>): Int {
-        val unprocessed: MutableMap<Pair<Int, Int>, Node> = HashMap()
+        val map: MutableMap<Pair<Int, Int>, Node> = HashMap()
         input.forEachIndexed { row, s ->
             s.toList().forEachIndexed { column, c ->
                 for (i in 0..4) {
                     for (j in 0..4) {
-                        unprocessed[Pair(row + i * input.size, column + j * input.size)] = Node(c.digitToInt().incWrapped(i + j))
+                        map[Pair(row + i * input.size, column + j * input.size)] = Node(c.digitToInt().incWrapped(i + j))
                     }
                 }
 
             }
         }
-        unprocessed[Pair(0, 0)]!!.shortestPath = 0
+        map[Pair(0, 0)]!!.shortestPath = 0
 
-        val processed: MutableMap<Pair<Int, Int>, Node> = dijkstra(unprocessed)
+        val processed = dijkstra(map)
 
         return processed[Pair(input.size * 5 - 1, input.size * 5 - 1)]!!.shortestPath
     }
