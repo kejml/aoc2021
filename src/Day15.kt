@@ -8,11 +8,8 @@ fun main() {
         )
     }
 
-    fun part1(input: List<String>): Int {
-        val unprocessed = input.mapIndexed { row, s -> s.toList().mapIndexed { column, c -> (row to column) to Node(c.digitToInt()) } }.flatten().toMap().toMutableMap()
-        unprocessed[Pair(0,0)]!!.shortestPath = 0
-
-        val processed: MutableMap<Pair<Int,Int>, Node> = HashMap()
+    fun dijkstra(unprocessed: MutableMap<Pair<Int, Int>, Node>): MutableMap<Pair<Int, Int>, Node> {
+        val processed: MutableMap<Pair<Int, Int>, Node> = HashMap()
 
         while (unprocessed.isNotEmpty()) {
             val nextNode = unprocessed.minByOrNull { it.value.shortestPath }!!
@@ -29,13 +26,39 @@ fun main() {
             processed[nextNode.key] = nextNode.value
             unprocessed.remove(nextNode.key)
         }
+        return processed
+    }
+
+    fun part1(input: List<String>): Int {
+        val unprocessed = input.mapIndexed { row, s -> s.toList().mapIndexed { column, c -> (row to column) to Node(c.digitToInt()) } }.flatten().toMap().toMutableMap()
+        unprocessed[Pair(0,0)]!!.shortestPath = 0
+
+        val processed: MutableMap<Pair<Int, Int>, Node> = dijkstra(unprocessed)
 
         return processed[Pair(input.size - 1, input.size - 1)]!!.shortestPath
 
     }
 
+    fun Int.incWrapped(n: Int): Int = if (this + n > 9) this + n - 9 else this + n
+
+
     fun part2(input: List<String>): Int {
-        return input.size
+        val unprocessed: MutableMap<Pair<Int, Int>, Node> = HashMap()
+        input.forEachIndexed { row, s ->
+            s.toList().forEachIndexed { column, c ->
+                for (i in 0..4) {
+                    for (j in 0..4) {
+                        unprocessed[Pair(row + i * input.size, column + j * input.size)] = Node(c.digitToInt().incWrapped(i + j))
+                    }
+                }
+
+            }
+        }
+        unprocessed[Pair(0, 0)]!!.shortestPath = 0
+
+        val processed: MutableMap<Pair<Int, Int>, Node> = dijkstra(unprocessed)
+
+        return processed[Pair(input.size * 5 - 1, input.size * 5 - 1)]!!.shortestPath
     }
 
     // test if implementation meets criteria from the description, like:
@@ -48,7 +71,7 @@ fun main() {
     val input = readInput("Day15")
     println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 315)
     println(part2(input))
 }
 
