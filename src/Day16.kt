@@ -47,10 +47,10 @@ infix fun Int.fillTo(base: Int): Int {
 
 sealed class Packet(val version: Int, val bitLength: Int) {
     companion object {
-        fun fromString(input: String): List<Packet> {
+        fun fromString(input: String, maxPackets: Int = Int.MAX_VALUE): List<Packet> {
             val packets = mutableListOf<Packet>()
             var rawInput = input
-            while (rawInput.isNotEmpty()) {
+            while (rawInput.isNotEmpty() && packets.size < maxPackets) {
                 val packet = when (rawInput.substring(3, 6)) {
                     "100" -> Literal.fromString(rawInput)
                     else -> Operator.fromString(rawInput)
@@ -98,8 +98,8 @@ class Operator(version: Int, val operation: Int, val operands: List<Packet>, bit
                 '1' -> {
                     val numOfPackets = input.drop(7).take(11).toInt(2)
                     bitLengthL = 11
-                    val packets = Packet.fromString(input.drop(7 + 11))
-                    //require(packets.size == numOfPackets)
+                    val packets = Packet.fromString(input.drop(7 + 11), numOfPackets)
+                    require(packets.size == numOfPackets)
 
                     packets
                 }
