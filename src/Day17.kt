@@ -25,7 +25,20 @@ fun main() {
     }
 
     fun part2(input: String): Int {
-        return input.length
+        val target = parseInput(input)
+        var hits = 0
+        val starts = mutableListOf<Pair<Int, Int>>()
+
+        for (i in 0 ..target.x.second) {
+            for (j in target.y.first..-target.y.first*5) {
+                val probe = Probe(i, j)
+                if (probe.highestPoint(target) != null) {
+                    hits++
+                    starts.add(i to j)
+                }
+            }
+        }
+        return hits
     }
 
     // test if implementation meets criteria from the description, like:
@@ -35,7 +48,7 @@ fun main() {
     val input = readText("Day17")
     println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 112)
     println(part2(input))
 }
 
@@ -60,7 +73,7 @@ class Probe(private var dx: Int, private var dy: Int, private var x:Int = 0, pri
             maxHeight = maxHeight.coerceAtLeast(y)
             if (target.inTarget(getPosition())) return maxHeight
             if (dx == 0 && !target.inTargetX(getPosition())) return null
-            if (y < target.y.second) return null
+            if (y < target.y.first) return null
 
             step()
         }
