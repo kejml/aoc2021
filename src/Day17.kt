@@ -27,15 +27,11 @@ fun main() {
     fun part2(input: String): Int {
         val target = parseInput(input)
         var hits = 0
-        val starts = mutableListOf<Pair<Int, Int>>()
 
         for (i in 0 ..target.x.second) {
             for (j in target.y.first..-target.y.first*5) {
                 val probe = Probe(i, j)
-                if (probe.highestPoint(target) != null) {
-                    hits++
-                    starts.add(i to j)
-                }
+                if (probe.highestPoint(target) != null)  hits++
             }
         }
         return hits
