@@ -41,10 +41,6 @@ fun main() {
     println(part2(input))
 }
 
-infix fun Int.fillTo(base: Int): Int {
-    return if (this % base == 0) 0 else base - (this % base)
-}
-
 sealed class Packet(val version: Int, val bitLength: Int) {
     companion object {
         fun fromString(input: String, maxPackets: Int = Int.MAX_VALUE): List<Packet> {
@@ -88,16 +84,16 @@ class Operator(version: Int, val operation: Int, val operands: List<Packet>, bit
         fun fromString(input: String): Operator {
             val version = input.take(3).toInt(2)
             val operation = input.drop(3).take(3).toInt(2)
-            var bitLengthL = 0
+            var skippedBits = 0
             val operands = when (input[6]) {
                 '0' -> {
                     val length = input.drop(7).take(15).toInt(2)
-                    bitLengthL = 15
+                    skippedBits = 15
                     Packet.fromString(input.drop(7 + 15).take(length))
                 }
                 '1' -> {
                     val numOfPackets = input.drop(7).take(11).toInt(2)
-                    bitLengthL = 11
+                    skippedBits = 11
                     val packets = Packet.fromString(input.drop(7 + 11), numOfPackets)
                     require(packets.size == numOfPackets)
 
@@ -105,7 +101,7 @@ class Operator(version: Int, val operation: Int, val operands: List<Packet>, bit
                 }
                 else -> throw IllegalArgumentException("Unexpected char '${input[6]}'")
             }
-            val bitLengthRaw = 7 + bitLengthL + operands.sumOf { it.bitLength }
+            val bitLengthRaw = 7 + skippedBits + operands.sumOf { it.bitLength }
             return Operator(version, operation, operands, bitLengthRaw)
         }
     }
@@ -121,7 +117,7 @@ class Operator(version: Int, val operation: Int, val operands: List<Packet>, bit
             5 -> if (operands[0].calculate() > operands[1].calculate()) 1 else 0
             6 -> if (operands[0].calculate() < operands[1].calculate()) 1 else 0
             7 -> if (operands[0].calculate() == operands[1].calculate()) 1 else 0
-            else -> throw IllegalArgumentException("Unknow operation $operation")
+            else -> throw IllegalArgumentException("Unknown operation $operation")
         }
     }
 }
