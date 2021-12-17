@@ -58,27 +58,32 @@ data class Target(val x: Pair<Int, Int>, val y: Pair<Int, Int>) {
     fun inTargetY(p: Pair<Int, Int>): Boolean =  p.second in y.first..y.second
 }
 
-class Probe(private var dx: Int, private var dy: Int, private var x:Int = 0, private var y: Int = 0) {
-    fun step() {
-        x += dx
-        y += dy
-        if (dx > 0) dx--
-        if (dx < 0) dx++
-        dy--
-    }
+class Probe(private val startVx: Int, private val startVy: Int) {
 
     fun highestPoint(target: Target): Int? {
+        var x = 0
+        var y = 0
+        var dx = startVx
+        var dy = startVy
+
+        fun step() {
+            x += dx
+            y += dy
+            if (dx > 0) dx--
+            if (dx < 0) dx++
+            dy--
+        }
+
+        fun currentPosition() = x to y
+
         var maxHeight = 0
         while (true) {
             maxHeight = maxHeight.coerceAtLeast(y)
-            if (target.inTarget(getPosition())) return maxHeight
-            if (dx == 0 && !target.inTargetX(getPosition())) return null
+            if (target.inTarget(currentPosition())) return maxHeight
+            if (dx == 0 && !target.inTargetX(currentPosition())) return null
             if (y < target.y.first) return null
 
             step()
         }
     }
-
-    fun getPosition(): Pair<Int, Int> = x to y
-    fun getDx(): Int = dx
 }
