@@ -1,7 +1,7 @@
 fun main() {
 
     fun parseInput(input: String): Target {
-        val (x,y) = input
+        val (x, y) = input
             .substringAfter(":")
             .split(",")
             .map { it.trim() }
@@ -15,10 +15,9 @@ fun main() {
         val target = parseInput(input)
         var maxHeight = 0
 
-        for (i in 0 ..target.x.second) {
+        for (i in 0..target.x.second) {
             for (j in target.y.first..-target.y.first) {
-                val probe = Probe(i, j)
-                maxHeight = probe.highestPoint(target)?.coerceAtLeast(maxHeight) ?: maxHeight
+                maxHeight = Probe(i, j).highestPoint(target)?.coerceAtLeast(maxHeight) ?: maxHeight
             }
         }
         return maxHeight
@@ -28,10 +27,9 @@ fun main() {
         val target = parseInput(input)
         var hits = 0
 
-        for (i in 0 ..target.x.second) {
-            for (j in target.y.first..-target.y.first*5) {
-                val probe = Probe(i, j)
-                if (probe.highestPoint(target) != null)  hits++
+        for (i in 0..target.x.second) {
+            for (j in target.y.first..-target.y.first) {
+                if (Probe(i, j).highestPoint(target) != null) hits++
             }
         }
         return hits
@@ -51,7 +49,7 @@ fun main() {
 data class Target(val x: Pair<Int, Int>, val y: Pair<Int, Int>) {
     fun inTarget(p: Pair<Int, Int>): Boolean = inTargetX(p) && inTargetY(p)
     fun inTargetX(p: Pair<Int, Int>): Boolean = p.first in x.first..x.second
-    fun inTargetY(p: Pair<Int, Int>): Boolean =  p.second in y.first..y.second
+    fun inTargetY(p: Pair<Int, Int>): Boolean = p.second in y.first..y.second
 }
 
 class Probe(private val startVx: Int, private val startVy: Int) {
