@@ -3,8 +3,7 @@ import kotlin.math.floor
 
 fun main() {
     fun part1(input: List<String>): Long {
-        val result = input.map { SfPair.fromString(it) }.reduce { acc, sfPair -> acc + sfPair }
-        return result.magnitude()
+        return input.map { SfPair.fromString(it) }.reduce { acc, sfPair -> acc + sfPair }.magnitude()
     }
 
     fun part2(input: List<String>): Long {
@@ -131,11 +130,11 @@ class SfPair(var left: SfNumber, var right: SfNumber, parent: SfPair? = null) : 
     }
 
     private fun explodeInternal(sfPair: SfPair) {
-        explodeLeft(sfPair, (sfPair.left as SfRegular).value)
-        explodeRight(sfPair, (sfPair.right as SfRegular).value)
+        explodeLeftParent(sfPair, (sfPair.left as SfRegular).value)
+        explodeRightParent(sfPair, (sfPair.right as SfRegular).value)
     }
 
-    private fun explodeRight(sfPair: SfPair, value: Long) {
+    private fun explodeRightParent(sfPair: SfPair, value: Long) {
         var parent = sfPair
         var previous: SfPair?
         while (parent.parent != null) {
@@ -145,13 +144,13 @@ class SfPair(var left: SfNumber, var right: SfNumber, parent: SfPair? = null) : 
                 (parent.right as SfRegular).value += value
                 break
             } else if (parent.right != previous) {
-                explodeLeft2(parent.right as SfPair, value)
+                explodeLeftChild(parent.right as SfPair, value)
                 break
             }
         }
     }
 
-    private fun explodeLeft(sfPair: SfPair, value: Long) {
+    private fun explodeLeftParent(sfPair: SfPair, value: Long) {
         var parent = sfPair
         var previous: SfPair?
 
@@ -162,13 +161,13 @@ class SfPair(var left: SfNumber, var right: SfNumber, parent: SfPair? = null) : 
                 (parent.left as SfRegular).value += value
                 break
             } else if (parent.left != previous) {
-                explodeRight2(parent.left as SfPair, value)
+                explodeRightChild(parent.left as SfPair, value)
                 break
             }
         }
     }
 
-    private fun explodeLeft2(sfPair: SfPair, value: Long) {
+    private fun explodeLeftChild(sfPair: SfPair, value: Long) {
         var number = sfPair
         while (number.left !is SfRegular) {
             number = number.left as SfPair
@@ -176,7 +175,7 @@ class SfPair(var left: SfNumber, var right: SfNumber, parent: SfPair? = null) : 
         (number.left as SfRegular).value += value
     }
 
-    private fun explodeRight2(sfPair: SfPair, value: Long) {
+    private fun explodeRightChild(sfPair: SfPair, value: Long) {
         var number = sfPair
         while (number.right !is SfRegular) {
             number = number.right as SfPair
