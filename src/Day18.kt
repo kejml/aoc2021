@@ -8,7 +8,12 @@ fun main() {
     }
 
     fun part2(input: List<String>): Long {
-        return input.size.toLong()
+        val allPairs = cartesianProduct(input, input).filter { it.first != it.second }
+        var max = 0L
+        allPairs.forEach {
+            max = max.coerceAtLeast(part1(listOf(it.first, it.second)))
+        }
+        return max
     }
 
     // test if implementation meets criteria from the description, like:
@@ -18,8 +23,12 @@ fun main() {
     val input = readInput("Day18")
     println(part1(input))
 
-    check(part2(testInput) == 1L)
+    check(part2(testInput) == 3993L)
     println(part2(input))
+}
+
+fun cartesianProduct(c1: List<String>, c2: List<String>): List<Pair<String, String>> {
+    return c1.flatMap { lhsElem -> c2.map { rhsElem -> lhsElem to rhsElem } }
 }
 
 sealed class SfNumber(var parent: SfPair? = null) {
