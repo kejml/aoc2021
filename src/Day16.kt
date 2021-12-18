@@ -1,19 +1,19 @@
 fun main() {
 
-    fun part1(input: String): Int {
+    fun parsePackets(input: String): Packet {
         val binarySequence = input.asSequence().map { it.toString().toInt(16).toString(2).padStart(4, '0') }
         val binaryString = binarySequence.joinToString("")
         val packets = Packet.fromString(binaryString)
         require(packets.size == 1)
-        return packets[0].versionSum()
+        return packets.single()
+    }
+
+    fun part1(input: String): Int {
+        return parsePackets(input).versionSum()
     }
 
     fun part2(input: String): Long {
-        val binarySequence = input.asSequence().map { it.toString().toInt(16).toString(2).padStart(4, '0') }
-        val binaryString = binarySequence.joinToString("")
-        val packets = Packet.fromString(binaryString)
-        require(packets.size == 1)
-        return packets[0].calculate()
+        return parsePackets(input).calculate()
     }
 
     // test if implementation meets criteria from the description, like:
