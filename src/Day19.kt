@@ -1,7 +1,8 @@
 import java.lang.Exception
+import kotlin.math.abs
 
 fun main() {
-    fun part1(input: String): Int {
+    fun createFullMap(input: String): Pair<Scanner, List<Beacon>> {
         val scanners = input.split("\r\n\r\n").map { line -> line.split("\r\n") }.map { scanner ->
             val scannerId = scanner[0].split(" ")[2].toInt()
             val beacons = scanner.drop(1).map { beacon -> beacon.split(",").map { it.toInt() } }
@@ -9,24 +10,31 @@ fun main() {
             Scanner(beacons, scannerId)
         }.toMutableList()
         var completeMap = scanners.removeAt(0)
+        val positions = mutableListOf(Beacon(0, 0, 0))
         while (scanners.isNotEmpty()) {
             val iterator = scanners.iterator()
             while (iterator.hasNext()) {
                 try {
                     val candidate = iterator.next()
-                    completeMap += completeMap.maxOverlaps(candidate)
+                    val (newMap, newPosition) = completeMap.maxOverlaps(candidate)
+                    completeMap += newMap
+                    positions.add(newPosition)
                     iterator.remove()
                 } catch (ex: Exception) {
-                    println("Didn't work, trying a different one, current map size is ${completeMap.beacons.size}, scanners left ${scanners.size}")
+                    //println("Didn't work, trying a different one, current map size is ${completeMap.beacons.size}, scanners left ${scanners.size}")
                 }
             }
         }
+        return completeMap to positions
+    }
 
-        return completeMap.beacons.size
+    fun part1(input: String): Int {
+        return createFullMap(input).first.beacons.size
     }
 
     fun part2(input: String): Int {
-        return input.length
+        val sensors = createFullMap(input).second
+        return (sensors x sensors).maxOf { abs(it.first.x - it.second.x) + abs(it.first.y - it.second.y) + abs(it.first.z - it.second.z) }
     }
 
     // test if implementation meets criteria from the description, like:
@@ -36,7 +44,7 @@ fun main() {
     val input = readText("Day19")
     println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 3621)
     println(part2(input))
 }
 
@@ -107,14 +115,14 @@ data class Scanner(val beacons: List<Beacon>, val scannerId: Int? = null) {
         return Scanner(beacons.map { it + by })
     }
 
-    fun maxOverlaps(other: Scanner): Scanner {
+    fun maxOverlaps(other: Scanner): Pair<Scanner, Beacon> {
         this.beacons.forEach { b1 ->
             other.rotations().forEach { r ->
                 r.beacons.forEach { b2 ->
                     val diff = b2 - b1
                     val candidate = r.translate(diff)
                     if (this overlap candidate >= 12) {
-                        return candidate
+                        return candidate to diff
                     }
                 }
             }
