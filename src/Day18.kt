@@ -26,10 +26,6 @@ fun main() {
     println(part2(input))
 }
 
-fun cartesianProduct(c1: List<String>, c2: List<String>): List<Pair<String, String>> {
-    return c1.flatMap { lhsElem -> c2.map { rhsElem -> lhsElem to rhsElem } }
-}
-
 sealed class SfNumber(var parent: SfPair? = null) {
     operator fun plus(other: SfNumber): SfPair {
         val result = SfPair(this, other)

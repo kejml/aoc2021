@@ -14,3 +14,7 @@ fun readDigitMatrix(name: String) = readInput(name).map { it.toCharArray().map {
  * Converts string to md5 hash.
  */
 fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray())).toString(16)
+
+fun cartesianProduct(c1: List<String>, c2: List<String>): List<Pair<String, String>> {
+    return c1.flatMap { lhsElem -> c2.map { rhsElem -> lhsElem to rhsElem } }
+}
