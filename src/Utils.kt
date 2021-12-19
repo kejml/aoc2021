@@ -15,6 +15,6 @@ fun readDigitMatrix(name: String) = readInput(name).map { it.toCharArray().map {
  */
 fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray())).toString(16)
 
-fun cartesianProduct(c1: List<String>, c2: List<String>): List<Pair<String, String>> {
-    return c1.flatMap { lhsElem -> c2.map { rhsElem -> lhsElem to rhsElem } }
+infix fun <E> List<E>.x(c2: List<E>): List<Pair<E, E>> {
+    return flatMap { lhsElem -> c2.map { rhsElem -> lhsElem to rhsElem } }
 }

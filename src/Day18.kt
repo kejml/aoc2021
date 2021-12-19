@@ -7,7 +7,7 @@ fun main() {
     }
 
     fun part2(input: List<String>): Long {
-        val allPairs = cartesianProduct(input, input).filter { it.first != it.second }
+        val allPairs = (input x input).filter { it.first != it.second }
         var max = 0L
         allPairs.forEach {
             max = max.coerceAtLeast(part1(listOf(it.first, it.second)))
