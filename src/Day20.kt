@@ -1,5 +1,5 @@
 fun main() {
-    fun part1(input: List<String>): Int {
+    fun enhanceImage(input: List<String>, times: Int): Int {
         val algorithm = input[0]
         val image = input.drop(2).mapIndexed { rowNum, line -> line.mapIndexed { colNum, c -> Pair(rowNum, colNum) to c }.toMap() }
             .fold(HashMap<Pair<Int, Int>, Char>()) { acc, map ->
@@ -8,7 +8,7 @@ fun main() {
             }
         var newImage = image
         var outside = '.'
-        repeat(2) {
+        repeat(times) {
             val (newImage2, outside2) = newImage.enhance(algorithm, outside)
             newImage = newImage2
             outside = outside2
@@ -16,8 +16,12 @@ fun main() {
         return newImage.values.filter { it == '#' }.size
     }
 
+    fun part1(input: List<String>): Int {
+        return enhanceImage(input, 2)
+    }
+
     fun part2(input: List<String>): Int {
-        return input.size
+        return enhanceImage(input, 50)
     }
 
     // test if implementation meets criteria from the description, like:
@@ -27,7 +31,7 @@ fun main() {
     val input = readInput("Day20")
     println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 3351)
     println(part2(input))
 }
 
