@@ -1,28 +1,28 @@
-import java.util.*
 import kotlin.math.abs
 
-val maxInit = 30000
+const val maxInit = Int.MAX_VALUE
 var bestSoFar = maxInit
 
 fun main() {
 
     fun initState(state: State) {
-        val toDo = state.init()
+        val toDo = state.init().toMutableList()
         var lastReported = 0
         while (toDo.isNotEmpty()) {
             val last = toDo.last()
-            val lastIndex = toDo.size - 1
+            toDo.removeAt(toDo.size - 1)
+            last.parent?.children?.remove(last)
             toDo.addAll(last.init())
-            toDo.removeAt(lastIndex)
-            val reported = toDo.size / 100_000
+            val reported = state.children.size
             if (lastReported != reported) {
-                println(toDo.size)
+                println(reported)
                 lastReported = reported
             }
         }
     }
 
     fun part1(input: List<String>): Int {
+        bestSoFar = maxInit
         val start = State(
             listOf(
                 Room(Amphipod.A, input[2][3].toAmphipod(), input[3][3].toAmphipod()),
@@ -30,7 +30,7 @@ fun main() {
                 Room(Amphipod.C, input[2][7].toAmphipod(), input[3][7].toAmphipod()),
                 Room(Amphipod.D, input[2][9].toAmphipod(), input[3][9].toAmphipod()),
             ), Hallway(),
-            0
+            0, parent = null
         )
         initState(start)
         println("Tree created")
@@ -40,24 +40,53 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        bestSoFar = maxInit
+        val start = State(
+            listOf(
+                Room(Amphipod.A, Array(4) { Cell() }),
+                Room(Amphipod.B, Array(4) { Cell() }),
+                Room(Amphipod.C, Array(4) { Cell() }),
+                Room(Amphipod.D, Array(4) { Cell() }),
+            ), Hallway(),
+            0, parent = null
+        )
+
+        start.rooms[0].cells[0] = Cell(input[2][3].toAmphipod())
+        start.rooms[0].cells[3] = Cell(input[3][3].toAmphipod())
+        start.rooms[1].cells[0] = Cell(input[2][5].toAmphipod())
+        start.rooms[1].cells[3] = Cell(input[3][5].toAmphipod())
+        start.rooms[2].cells[0] = Cell(input[2][7].toAmphipod())
+        start.rooms[2].cells[3] = Cell(input[3][7].toAmphipod())
+        start.rooms[3].cells[0] = Cell(input[2][9].toAmphipod())
+        start.rooms[3].cells[3] = Cell(input[3][9].toAmphipod())
+
+        start.rooms[0].cells[1] = Cell(Amphipod.D)
+        start.rooms[0].cells[2] = Cell(Amphipod.D)
+        start.rooms[1].cells[1] = Cell(Amphipod.C)
+        start.rooms[1].cells[2] = Cell(Amphipod.B)
+        start.rooms[2].cells[1] = Cell(Amphipod.B)
+        start.rooms[2].cells[2] = Cell(Amphipod.A)
+        start.rooms[3].cells[1] = Cell(Amphipod.A)
+        start.rooms[3].cells[2] = Cell(Amphipod.C)
+
+        initState(start)
+        println("Tree created")
+        println(bestSoFar)
+
+        return bestSoFar
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput2 = readInput("Day23_test2")
     check(part1(testInput2) == 46)
 
-    bestSoFar = maxInit
-
     val testInput = readInput("Day23_test")
     check(part1(testInput) == 12521)
 
-    bestSoFar = maxInit //20534
-
     val input = readInput("Day23")
-    println(part1(input))
+//    println(part1(input))
 
-    check(part2(testInput) == 1)
+    check(part2(testInput) == 44169)
     println(part2(input))
 }
 
@@ -67,19 +96,23 @@ class Cell(val content: Amphipod? = null) {
     override fun toString(): String {
         return content?.toString() ?: "."
     }
-
 }
 
-class Room(val homeOwner: Amphipod, topContent: Amphipod? = null, bottomContent: Amphipod? = null) {
-    val cellTop = Cell(topContent)
-    val cellBottom = Cell(bottomContent)
-    fun isDone() = cellTop.content == homeOwner && cellBottom.content == homeOwner
+class Room(val homeOwner: Amphipod, val cells: Array<Cell> = Array(2) { Cell() }) {
+
+
+    constructor(homeOwner: Amphipod, topContent: Amphipod? = null, bottomContent: Amphipod? = null) : this(homeOwner) {
+        cells[0] = Cell(topContent)
+        cells[1] = Cell(bottomContent)
+    }
+
+    fun isDone() = cells.all { it.content == homeOwner }
 
     fun canAccetpt(a: Amphipod): Boolean {
         if (homeOwner != a) return false
-        if (!cellTop.isEmpty()) return false
-        if (cellTop.isEmpty() && cellBottom.isEmpty()) return true
-        if (cellTop.isEmpty() && cellBottom.content == homeOwner) return true
+        if (cells.filter { !it.isEmpty() }.all { it.content == homeOwner } && cells[0].isEmpty()) {
+            return true
+        }
         return false
     }
 
@@ -88,35 +121,32 @@ class Room(val homeOwner: Amphipod, topContent: Amphipod? = null, bottomContent:
     }
 
     fun getFirstOrNull(): Amphipod? {
-        if (cellTop.content != null) return cellTop.content
-        if (cellBottom.content != null) return cellBottom.content
-        return null
+        return cells.firstOrNull { !it.isEmpty() }?.content
+    }
+
+    fun canMoveFirst(): Boolean {
+        if (cells.filter { !it.isEmpty() }.all { it.content == homeOwner }) return false
+        return getFirstOrNull() != null
     }
 
     fun removeFirst(): Room {
-        if (cellTop.content != null) return Room(homeOwner, bottomContent = cellBottom.content)
-        if (cellBottom.content != null) return Room(homeOwner)
-        throw IllegalStateException("Can't remove amphipod from an empty room")
+        val firstIndex = cells.mapIndexed { index, cell -> if (!cell.isEmpty()) index else null }.filterNotNull().first()
+        val newCells = cells.mapIndexed { index, cell -> if (index == firstIndex) Cell() else cell }.toTypedArray()
+        return Room(homeOwner, cells = newCells)
     }
 
     fun add(amphipod: Amphipod): Room {
-        return if (cellBottom.content == null) {
-            Room(homeOwner, bottomContent = amphipod)
-        } else if (cellTop.content == null) {
-            Room(homeOwner, amphipod, cellBottom.content)
-        } else {
-            throw IllegalStateException("Room $homeOwner is already full!")
-        }
+        val firstIndex = cells.mapIndexed { index, cell -> if (cell.isEmpty()) index else null }.filterNotNull().last()
+        val newCells = cells.mapIndexed { index, cell -> if (index == firstIndex) Cell(amphipod) else cell }.toTypedArray()
+        return Room(homeOwner, cells = newCells)
     }
 
     fun emptyDistance(): Int {
-        return if (cellBottom.isEmpty()) 2
-        else if (cellTop.isEmpty()) 1
-        else 0
+        return cells.mapIndexed { index, cell -> if (cell.isEmpty()) index + 1 else null }.filterNotNull().lastOrNull()  ?: 0
     }
 
     override fun toString(): String {
-        return "Room(homeOwner=$homeOwner, cellTop=$cellTop, cellBottom=$cellBottom)"
+        return "Room(homeOwner=$homeOwner, cells=$cells"
     }
 
 
@@ -138,9 +168,10 @@ class State(
     val rooms: List<Room> = listOf(Room(Amphipod.A), Room(Amphipod.B), Room(Amphipod.C), Room(Amphipod.D)),
     val hallway: Hallway = Hallway(),
     val priceUntilNow: Int,
-    val children: MutableList<State> = LinkedList()
+    val children: MutableList<State> = mutableListOf(),
+    val parent: State?
 ) {
-    fun init(): MutableList<State> {
+    fun init(): List<State> {
         //println(priceUntilNow)
         if (this.isDone()) {
             if (priceUntilNow < bestSoFar) {
@@ -150,15 +181,13 @@ class State(
         } else if (priceUntilNow < bestSoFar) {
 
             val statesFromRooms = rooms.filter {
-                if (!it.cellTop.isEmpty() && (it.cellTop.content != it.homeOwner || it.cellBottom.content != it.homeOwner)) {
-                    true
-                } else it.cellTop.isEmpty() && !it.cellBottom.isEmpty() && it.cellBottom.content != it.homeOwner
-            }.map { room ->
-                reachableHallways(room).map { newState(room, it) } +
-                        rooms.mapNotNull { roomnTo ->
-                            if (isRoomReachable(room, roomnTo)) newState(
-                                room,
-                                roomnTo
+                it.canMoveFirst()
+            }.map { roomFrom ->
+                reachableHallways(roomFrom).map { newState(roomFrom, it) } +
+                        rooms.mapNotNull { roomTo ->
+                            if (isRoomReachable(roomFrom, roomTo)) newState(
+                                roomFrom,
+                                roomTo
                             ) else null
                         }
             }.flatten()
@@ -168,8 +197,11 @@ class State(
                     rooms.filter { isRoomReachable(it, index) }.map { room -> newState(index, room) }
                 }.flatten()
 
-            children.addAll(statesFromRooms + statesFromHallway)
-            return children
+            if (children.isNotEmpty()) throw IllegalStateException("Non empty children")
+
+            val newChildren = (statesFromRooms + statesFromHallway).filter { it.priceUntilNow < bestSoFar }
+            children.addAll(newChildren)
+            return newChildren
         }
 
         return mutableListOf()
@@ -185,7 +217,7 @@ class State(
         val hallway =
             Hallway(this.hallway.cells.mapIndexed { index, cell -> if (index == hallwayIndex) Cell(amphipod) else cell }
                 .toTypedArray())
-        return State(rooms, hallway, priceUntilNow + distance * amphipod.cost)
+        return State(rooms, hallway, priceUntilNow + distance * amphipod.cost, parent = this)
     }
 
     fun newState(fromIndex: Int, to: Room): State {
@@ -195,7 +227,7 @@ class State(
         val rooms = this.rooms.mapIndexed { index, room -> if (index == roomId) room.add(amphipod) else room }
         val hallway = Hallway(this.hallway.cells.mapIndexed { index, cell -> if (index == fromIndex) Cell() else cell }
             .toTypedArray())
-        return State(rooms, hallway, priceUntilNow + distance * amphipod.cost)
+        return State(rooms, hallway, priceUntilNow + distance * amphipod.cost, parent = this)
     }
 
     fun newState(from: Room, to: Room): State {
@@ -214,7 +246,7 @@ class State(
             }
         }
         val hallway = this.hallway
-        return State(rooms, hallway, priceUntilNow + distance * amphipod.cost)
+        return State(rooms, hallway, priceUntilNow + distance * amphipod.cost, parent = this)
     }
 
     fun reachableHallways(from: Room): List<Int> {
@@ -248,10 +280,12 @@ class State(
     }
 
     override fun toString(): String {
-        var res = "#############\n"
+        var res = "$priceUntilNow\n" +
+                "#############\n"
         res += "#$hallway#\n"
-        res += "###${rooms[0].cellTop}#${rooms[1].cellTop}#${rooms[2].cellTop}#${rooms[3].cellTop}###\n"
-        res += "  #${rooms[0].cellBottom}#${rooms[1].cellBottom}#${rooms[2].cellBottom}#${rooms[3].cellBottom}###\n"
+        for (i in 0 until rooms[0].cells.size) {
+            res += "###${rooms[0].cells[i]}#${rooms[1].cells[i]}#${rooms[2].cells[i]}#${rooms[3].cells[i]}###\n"
+        }
         res += "  #########"
         return res
     }
